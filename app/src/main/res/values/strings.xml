@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Score Keeper</string>
+    <string name="heading">Indian Premier League</string>
+    <string name="yet_to_bat">Yet to bat</string>
+    <string name="default_stats">0</string>
+    <string name="run_label">Runs</string>
+    <string name="ball_label">Balls</string>
+    <string name="first_inning">1st Inning</string>
+    <string name="second_inning">2nd Inning</string>
+    <string name="kkr">Kolkata\nKnight Riders</string>
+    <string name="default_score">0/0</string>
+</resources>
