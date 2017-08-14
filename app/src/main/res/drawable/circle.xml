@@ -3,5 +3,4 @@
     android:innerRadius="0dp"
     android:shape="ring"
     android:thickness="3dp"
-    android:useLevel="false">
-</shape>
+    android:useLevel="false"></shape>

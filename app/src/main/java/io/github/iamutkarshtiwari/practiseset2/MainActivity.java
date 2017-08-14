@@ -5,8 +5,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -37,6 +37,21 @@ public class MainActivity extends AppCompatActivity {
     Player firstPlayer;
     Player secondPlayer;
     Player currentPlayer;
+
+    /**
+     * @param view    touch of which is toggled
+     * @param enabled flag to enable/disable the touch on this view
+     */
+    public static void enableTouchOnView(View view, boolean enabled) {
+        view.setEnabled(enabled);
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+
+            for (int idx = 0; idx < group.getChildCount(); idx++) {
+                enableTouchOnView(group.getChildAt(idx), enabled);
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,8 +154,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @param balls no of balls delivered
-     * @param runs  no of runs scored a the ball
+     * @param balls number of balls delivered
+     * @param runs  number of runs scored a the ball
      */
     public void updateRunsAndBalls(int balls, int runs) {
         currentTeam.balls_left -= balls;
@@ -148,31 +163,33 @@ public class MainActivity extends AppCompatActivity {
         currentPlayer.balls += balls;
         currentPlayer.runs += runs;
 
-        View teamScoreBoard = findViewById(inning == 1 ? team1_score_board : R.id.team2_score_board);
+        if (balls != 0) {
+            View teamScoreBoard = findViewById(inning == 1 ? R.id.team1_score_board : R.id.team2_score_board);
 
-        // Update balls colors
-        int overBall = (120 - currentTeam.balls_left) % 6;
-        if (overBall == 1) {
-            for (int i = 1; i <= 6; i++) {
-                updateTint(teamScoreBoard, i, Color.WHITE);
-            }
-            updateTint(teamScoreBoard, overBall, Color.RED);
-        } else {
-            // If over complete switch player
-            if (overBall == 0) {
-                overBall = 6;
-                currentPlayerID = currentPlayerID == 1 ? 2 : 1;
-                currentPlayer = currentPlayerID == 1 ? firstPlayer : secondPlayer;
-            }
-            updateTint(teamScoreBoard, overBall, Color.RED);
-        }
-
-        if (currentTeam.isInningComplete()) {
-            if (inning == 1) {
-                inning = 2;
-                changeOfInning(inning);
+            // Update balls colors
+            int overBall = (120 - currentTeam.balls_left) % 6;
+            if (overBall == 1) {
+                for (int i = 1; i <= 6; i++) {
+                    updateTint(teamScoreBoard, i, Color.WHITE);
+                }
+                updateTint(teamScoreBoard, overBall, Color.RED);
             } else {
-                declareWinner();
+                // If over complete switch player
+                if (overBall == 0) {
+                    overBall = 6;
+                    currentPlayerID = currentPlayerID == 1 ? 2 : 1;
+                    currentPlayer = currentPlayerID == 1 ? firstPlayer : secondPlayer;
+                }
+                updateTint(teamScoreBoard, overBall, Color.RED);
+            }
+
+            if (currentTeam.isInningComplete()) {
+                if (inning == 1) {
+                    inning = 2;
+                    changeOfInning(inning);
+                } else {
+                    declareWinner();
+                }
             }
         }
     }
@@ -202,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             } else {
                 declareWinner();
+                changeOfInning(3);
                 return;
             }
         }
@@ -264,32 +282,25 @@ public class MainActivity extends AppCompatActivity {
             firstInning.setSelected(true);
             secondInning.setSelected(false);
 
-            disableTouchOnView(firstTeamActions, false);
-            disableTouchOnView(secondTeamActions, true);
-        } else {
+            enableTouchOnView(firstTeamActions, true);
+            enableTouchOnView(secondTeamActions, false);
+        } else if (inning == 2) {
             firstInning.setSelected(false);
             secondInning.setSelected(true);
 
-            disableTouchOnView(firstTeamActions, true);
-            disableTouchOnView(secondTeamActions, false);
+            enableTouchOnView(firstTeamActions, false);
+            enableTouchOnView(secondTeamActions, true);
 
             firstPlayer = new Player(TEAM2_PLAYERS[0], 0);
             secondPlayer = new Player(TEAM2_PLAYERS[1], 1);
             currentPlayer = firstPlayer;
             nextPlayer = 0;
             currentTeam = secondTeam;
+        } else { // If match is complete
+            enableTouchOnView(firstTeamActions, false);
+            enableTouchOnView(secondTeamActions, false);
         }
 
-    }
-
-    public void disableTouchOnView(View view, boolean st) {
-        final boolean state = st;
-        view.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return state;
-            }
-        });
     }
 
     /**
@@ -459,7 +470,7 @@ class Team {
      */
     public boolean isInningComplete() {
         this.run_rate = (double) runs / (120 - balls_left);
-        this.overs = (double) ((120 - balls_left) / 6);
+        this.overs = (double) ((120 - balls_left) / 6) + (0.1 * ((120 - balls_left) % 6));
 
         if (this.overs >= 20 || this.balls_left == 0) {
             return true;

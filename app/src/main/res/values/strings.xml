@@ -20,7 +20,7 @@
     <string name="out">Out</string>
     <string name="actions">Actions</string>
     <string name="reset">Reset</string>
-    <string name="won_by_wickets_and_run">%1$s won by %2$d runs &amp;amp; %3$d wickets!</string>
+    <string name="won_by_wickets_and_run">%1$s won by %2$d runs &amp; %3$d wickets!</string>
     <string name="won_by_run">%1$s won by %2$d runs!</string>
     <string name="tie">There was a tie between %1$s and %2$s</string>
     <string name="run_rate">Run Rate</string>
